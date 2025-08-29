@@ -1,7 +1,12 @@
+
+
+
 streamlit==1.37.1
-torch==2.2.2
-torchvision==0.17.2
-transformers==4.41.2
+torch==2.5.1+cpu
+torchvision==0.20.1+cpu
+transformers==4.43.3
 scikit-learn==1.5.0
 pillow==10.3.0
 numpy==1.26.4
+
+--extra-index-url https://download.pytorch.org/whl/cpu
