@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multimodal AI Captioning</title>
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background: #f9fafb;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+    }
+    input[type="file"] {
+      margin: 1rem 0;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    #caption {
+      margin-top: 1rem;
+      font-style: italic;
+      color: #333;
+    }
+    img {
+      max-width: 100%;
+      margin-top: 1rem;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧠 Multimodal AI Captioning</h1>
+    <input type="file" id="imageUpload" accept="image/*" />
+    <button id="uploadBtn">Generate Caption</button>
+    <p id="caption"></p>
+    <img id="preview" src="" alt="">
+  </div>
+
+  <script>
+    const uploadBtn = document.getElementById("uploadBtn");
+    const imageInput = document.getElementById("imageUpload");
+    const captionOutput = document.getElementById("caption");
+    const previewImg = document.getElementById("preview");
+
+    uploadBtn.addEventListener("click", async () => {
+      const file = imageInput.files[0];
+      if (!file) {
+        captionOutput.textContent = "Please select an image first.";
+        return;
+      }
+
+      // Preview image
+      const reader = new FileReader();
+      reader.onload = e => previewImg.src = e.target.result;
+      reader.readAsDataURL(file);
+
+      captionOutput.textContent = "⏳ Generating caption...";
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/generate_caption/", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+      captionOutput.textContent = data.caption ? "💬 " + data.caption : "❌ Error: " + data.error;
+    });
+  </script>
+</body>
+</html>
