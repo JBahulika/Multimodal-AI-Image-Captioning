@@ -1,100 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Multimodal AI Captioning</title>
-  <style>
-    body {
-      font-family: "Inter", sans-serif;
-      background: #f9fafb;
-      color: #222;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-    .container {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      text-align: center;
-      width: 90%;
-      max-width: 400px;
-    }
-    input[type="file"] {
-      margin: 1rem 0;
-    }
-    button {
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 0.7rem 1.2rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-    button:hover {
-      background: #1d4ed8;
-    }
-    #caption {
-      margin-top: 1rem;
-      font-style: italic;
-      color: #333;
-    }
-    img {
-      max-width: 100%;
-      margin-top: 1rem;
-      border-radius: 8px;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multimodal AI Captioner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117;
+            overflow: hidden;
+        }
+        .gradient-blob {
+            position: absolute;
+            filter: blur(100px);
+            opacity: 0.3;
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .glass-card {
+            background: rgba(23, 23, 39, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .dragover {
+            border-color: #a78bfa;
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.3);
+        }
+        .loader {
+            border: 4px solid #4b5563;
+            border-top: 4px solid #f472b6;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .fade-in { animation: fadeIn 0.7s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .text-gradient {
+            background: linear-gradient(90deg, #f472b6, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <h1>🧠 Multimodal AI Captioning</h1>
-    <input type="file" id="imageUpload" accept="image/*" />
-    <button id="uploadBtn">Generate Caption</button>
-    <p id="caption"></p>
-    <img id="preview" src="" alt="">
-  </div>
+<body class="text-gray-200 flex items-center justify-center min-h-screen p-4 relative">
+    
+    <div class="gradient-blob top-[-20%] left-[-10%] w-[500px] h-[500px] bg-fuchsia-600"></div>
+    <div class="gradient-blob bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-violet-600"></div>
 
-  <script>
-    const uploadBtn = document.getElementById("uploadBtn");
-    const imageInput = document.getElementById("imageUpload");
-    const captionOutput = document.getElementById("caption");
-    const previewImg = document.getElementById("preview");
+    <div class="w-full max-w-5xl mx-auto relative z-10">
+        <header class="text-center mb-10">
+            <h1 class="text-5xl md:text-6xl font-extrabold text-white tracking-tight">Multimodal AI <span class="text-gradient">Captioner</span></h1>
+            <p class="text-lg text-gray-400 mt-4 max-w-2xl mx-auto">Transform your images with intelligent, context-aware captions.</p>
+        </header>
 
-    uploadBtn.addEventListener("click", async () => {
-      const file = imageInput.files[0];
-      if (!file) {
-        captionOutput.textContent = "Please select an image first.";
-        return;
-      }
+        <main class="glass-card rounded-2xl shadow-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 min-h-[480px]">
+            <!-- Left Column: Uploader and Image Preview -->
+            <div id="left-column" class="flex flex-col">
+                <div id="dropZone" class="w-full h-full flex flex-col justify-center items-center text-center cursor-pointer bg-black/20 rounded-xl p-6 border-2 border-dashed border-gray-700 transition-all duration-300 min-h-[350px]">
+                    <svg class="mx-auto h-12 w-12 text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>
+                    <p class="mt-4 text-lg font-semibold text-gray-300">Drop your image here or <span class="text-violet-400">browse</span></p>
+                    <p class="text-sm text-gray-500">Supports PNG, JPG, WEBP</p>
+                    <input type="file" id="imageUpload" accept="image/*" class="hidden" />
+                </div>
+                <div id="previewContainer" class="w-full h-full hidden rounded-lg overflow-hidden bg-black/20">
+                    <img id="preview" src="" alt="Image preview" class="w-full h-full object-contain">
+                </div>
+                 <button id="resetBtn" class="hidden mt-4 bg-gray-700/50 text-white font-semibold py-2 px-5 rounded-lg hover:bg-gray-600/80 transition-all duration-300 w-full">
+                    Start Over
+                </button>
+            </div>
 
-      // Preview image
-      const reader = new FileReader();
-      reader.onload = e => previewImg.src = e.target.result;
-      reader.readAsDataURL(file);
+            <!-- Right Column: Results -->
+            <div id="resultsPanel" class="flex flex-col justify-center items-center bg-black/20 rounded-xl p-6 min-h-[350px]">
+                <div id="placeholder" class="text-center text-gray-500 transition-opacity duration-300">
+                    <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                    <p class="mt-2 font-medium">Your captions will appear here</p>
+                </div>
+                <div id="loader" class="loader hidden"></div>
+                <div id="resultsContainer" class="w-full h-full hidden flex-col"></div>
+            </div>
+        </main>
+    </div>
 
-      captionOutput.textContent = "⏳ Generating caption...";
-      const formData = new FormData();
-      formData.append("file", file);
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const imageUpload = document.getElementById('imageUpload');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImg = document.getElementById('preview');
+        const resultsPanel = document.getElementById('resultsPanel');
+        const placeholder = document.getElementById('placeholder');
+        const loader = document.getElementById('loader');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resetBtn = document.getElementById('resetBtn');
 
-      const response = await fetch("/generate_caption/", {
-        method: "POST",
-        body: formData
-      });
+        dropZone.addEventListener('click', () => imageUpload.click());
+        imageUpload.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        
+        ['dragenter', 'dragover'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.add('dragover')));
+        ['dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.remove('dragover')));
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, (ev) => ev.preventDefault()));
+        dropZone.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
 
-      const data = await response.json();
-      captionOutput.textContent = data.caption ? "💬 " + data.caption : "❌ Error: " + data.error;
-    });
-  </script>
+        resetBtn.addEventListener('click', resetUI);
+
+        function resetUI() {
+            imageUpload.value = '';
+            previewImg.src = '';
+            previewContainer.classList.add('hidden');
+            dropZone.classList.remove('hidden');
+            resultsContainer.classList.add('hidden');
+            resultsContainer.innerHTML = '';
+            placeholder.classList.remove('hidden');
+            resetBtn.classList.add('hidden');
+        }
+
+        async function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            
+            setLoadingState(true);
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                previewImg.src = e.target.result;
+                previewContainer.classList.remove('hidden');
+                dropZone.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch("/generate_caption/", { method: "POST", body: formData });
+                if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                displayError(error.message);
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        function setLoadingState(isLoading) {
+            if (isLoading) {
+                placeholder.classList.add('hidden');
+                resultsContainer.classList.add('hidden');
+                loader.classList.remove('hidden');
+            } else {
+                loader.classList.add('hidden');
+                resetBtn.classList.remove('hidden');
+            }
+        }
+
+        function displayResults(data) {
+            resultsContainer.innerHTML = '';
+            if (data.error) {
+                displayError(data.error);
+                return;
+            }
+
+            if (data.best_caption) {
+                resultsContainer.appendChild(createCaptionElement(data.best_caption, true));
+            }
+
+            if (data.other_suggestions?.length > 0) {
+                const suggestionsHeader = document.createElement('h3');
+                suggestionsHeader.className = 'text-md font-semibold text-gray-400 mt-6 mb-3 text-left';
+                suggestionsHeader.textContent = 'Other Suggestions';
+                resultsContainer.appendChild(suggestionsHeader);
+                
+                const suggestionsList = document.createElement('div');
+                suggestionsList.className = 'space-y-3';
+                data.other_suggestions.forEach(cap => {
+                    suggestionsList.appendChild(createCaptionElement(cap, false));
+                });
+                resultsContainer.appendChild(suggestionsList);
+            }
+            resultsContainer.classList.remove('hidden');
+            resultsContainer.classList.add('fade-in');
+        }
+
+        function createCaptionElement(captionData, isBest) {
+            const el = document.createElement('div');
+            el.className = `p-3.5 rounded-lg text-left transition-colors duration-200 ${isBest ? 'bg-violet-900/50 border border-violet-700' : 'bg-gray-800/70'}`;
+            const scorePercent = (captionData.score * 100).toFixed(0);
+            const captionTextEscaped = escape(captionData.caption);
+
+            el.innerHTML = `
+                <div class="flex justify-between items-start gap-3">
+                    <p class="flex-1 ${isBest ? 'text-lg text-white font-semibold' : 'text-gray-300'}">${captionData.caption}</p>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-mono py-1 px-2 rounded ${isBest ? 'bg-violet-400/20 text-violet-300' : 'bg-gray-700 text-gray-400'}">${scorePercent}%</span>
+                        <button onclick="copyToClipboard(this, '${captionTextEscaped}')" class="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-md" title="Copy caption">
+                            <svg class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        </button>
+                    </div>
+                </div>
+                ${isBest ? `<p class="text-xs text-violet-400 font-semibold mt-2">✨ TOP MATCH</p>` : ''}
+            `;
+            return el;
+        }
+        
+        function displayError(message) {
+            resultsContainer.innerHTML = `<div class="text-center text-red-400 bg-red-900/50 p-4 rounded-lg"><p class="font-semibold">An Error Occurred</p><p class="text-sm mt-1">${message}</p></div>`;
+            resultsContainer.classList.remove('hidden');
+        }
+
+        function copyToClipboard(btn, text) {
+            navigator.clipboard.writeText(unescape(text)).then(() => {
+                btn.innerHTML = `<svg class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>`;
+                setTimeout(() => {
+                    btn.innerHTML = `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`;
+                }, 2000);
+            });
+        }
+    </script>
 </body>
 </html>
