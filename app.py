@@ -8,16 +8,15 @@ import json
 import torch
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-import random
 from pathlib import Path
 
 # --- Configuration ---
-MODEL_ID = "laion/CLIP-ViT-H-14-laion2B-s32B-b79K"
+MODEL_ID = "openai/clip-vit-large-patch14"
 CAPTIONS_PATH = "captions_set_01.json"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 TORCH_DTYPE = torch.float16 if DEVICE == "cuda" else torch.float32
 
-# --- Helper Functions (from your Notebook) ---
+# --- Helper Functions ---
 
 def _norm(s: str) -> str:
     """Normalize for dedupe: collapse spaces + lowercase."""
@@ -60,50 +59,37 @@ def compute_image_embedding(image, clip_model, processor):
     inputs = processor(images=image, return_tensors="pt").to(clip_model.device)
     inputs['pixel_values'] = inputs['pixel_values'].to(clip_model.dtype)
     with torch.no_grad():
-        image_features = clip_model.get_image_features(**inputs)
+        image_features = model.get_image_features(**inputs)
     return image_features.detach().cpu().numpy()
 
-def pick_diverse_captions(image_features_np, caption_features_np, captions, top_k=5, pool_size=100, diversity_threshold=0.96):
+# --- FINAL ALGORITHM (Supporting Shuffle) ---
+def get_caption_suggestions(image_features_np, caption_features_np, captions, top_k=15, pool_size=300, diversity_threshold=0.94):
     """
-    Selects a randomized, diverse set of top_k captions.
-    ACCURACY BOOST: Increased pool_size to 100 for more relevant initial candidates.
+    Finds a large, relevant, and diverse pool of captions to send to the frontend for shuffling.
     """
     sims = cosine_similarity(image_features_np, caption_features_np)[0]
     
-    initial_indices = np.argsort(sims)[-pool_size:][::-1]
+    sorted_relevant_indices = np.argsort(sims)[-pool_size:][::-1]
     
-    if len(initial_indices) == 0:
-        return {"best_caption": "No matching captions found.", "top_captions": []}
+    if len(sorted_relevant_indices) == 0:
+        return {"captions": []}
 
-    diverse_indices = [initial_indices[0]]
-    remaining_indices = list(initial_indices[1:])
-    random.shuffle(remaining_indices)
-    
-    for idx in remaining_indices:
-        if len(diverse_indices) >= top_k:
+    final_indices = [sorted_relevant_indices[0]]
+    for idx in sorted_relevant_indices[1:]:
+        if len(final_indices) >= top_k:
             break
         current_embedding = caption_features_np[idx].reshape(1, -1)
-        selected_embeddings = caption_features_np[diverse_indices]
+        selected_embeddings = caption_features_np[final_indices]
         similarity_to_selected = cosine_similarity(current_embedding, selected_embeddings)[0]
         
         if np.max(similarity_to_selected) < diversity_threshold:
-            diverse_indices.append(idx)
+            final_indices.append(idx)
 
-    final_scores = sims[diverse_indices]
-    sorted_order = np.argsort(final_scores)[::-1]
-    final_diverse_indices = np.array(diverse_indices)[sorted_order]
-    
     results = []
-    for idx in final_diverse_indices:
-        results.append({
-            "caption": captions[idx],
-            "score": float(sims[idx])
-        })
+    for idx in final_indices:
+        results.append({"caption": captions[idx]})
         
-    return {
-        "best_caption": results[0] if results else None,
-        "other_suggestions": results[1:]
-    }
+    return {"captions": results}
 
 # --- FastAPI Application ---
 app = FastAPI(title="Multimodal AI Caption Generator")
@@ -112,7 +98,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 # --- One-Time Model and Data Loading ---
 print("Server starting up...")
 print(f"Loading CLIP model: {MODEL_ID} onto {DEVICE.upper()}")
-clip_model = CLIPModel.from_pretrained(MODEL_ID, torch_dtype=TORCH_DTYPE).to(DEVICE)
+model = CLIPModel.from_pretrained(MODEL_ID, torch_dtype=TORCH_DTYPE).to(DEVICE)
 processor = CLIPProcessor.from_pretrained(MODEL_ID)
 print("Model loaded successfully.")
 
@@ -121,7 +107,7 @@ candidate_captions = load_captions(source=CAPTIONS_PATH)
 print(f"Loaded {len(candidate_captions)} unique captions.")
 
 print("Computing caption embeddings (this may take a moment)...")
-caption_embeds = compute_caption_embeddings(candidate_captions, clip_model, processor)
+caption_embeds = compute_caption_embeddings(candidate_captions, model, processor)
 print(f"Computed {len(caption_embeds)} caption embeddings.")
 print("--- Server is ready to accept requests ---")
 
@@ -137,8 +123,8 @@ async def generate_caption(file: UploadFile):
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents)).convert("RGB")
-        image_embed = compute_image_embedding(image, clip_model, processor)
-        caption_results = pick_diverse_captions(image_embed, caption_embeds, candidate_captions)
+        image_embed = compute_image_embedding(image, model, processor)
+        caption_results = get_caption_suggestions(image_embed, caption_embeds, candidate_captions)
         return JSONResponse(caption_results)
     except Exception as e:
         print(f"An error occurred: {e}")

@@ -60,7 +60,7 @@
     <div class="w-full max-w-5xl mx-auto relative z-10">
         <header class="text-center mb-10">
             <h1 class="text-5xl md:text-6xl font-extrabold text-white tracking-tight">Multimodal AI <span class="text-gradient">Captioner</span></h1>
-            <p class="text-lg text-gray-400 mt-4 max-w-2xl mx-auto">Transform your images with intelligent, context-aware captions.</p>
+            <p class="text-lg text-gray-400 mt-4 max-w-2xl mx-auto">Transform your images with intelligent, context-aware captions!</p>
         </header>
 
         <main class="glass-card rounded-2xl shadow-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 min-h-[480px]">
@@ -68,23 +68,31 @@
             <div id="left-column" class="flex flex-col">
                 <div id="dropZone" class="w-full h-full flex flex-col justify-center items-center text-center cursor-pointer bg-black/20 rounded-xl p-6 border-2 border-dashed border-gray-700 transition-all duration-300 min-h-[350px]">
                     <svg class="mx-auto h-12 w-12 text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>
-                    <p class="mt-4 text-lg font-semibold text-gray-300">Drop your image here or <span class="text-violet-400">browse</span></p>
-                    <p class="text-sm text-gray-500">Supports PNG, JPG, WEBP</p>
+                    <p class="mt-4 text-lg font-semibold text-gray-300">Drop your image here</p>
+                    
                     <input type="file" id="imageUpload" accept="image/*" class="hidden" />
                 </div>
                 <div id="previewContainer" class="w-full h-full hidden rounded-lg overflow-hidden bg-black/20">
                     <img id="preview" src="" alt="Image preview" class="w-full h-full object-contain">
                 </div>
-                 <button id="resetBtn" class="hidden mt-4 bg-gray-700/50 text-white font-semibold py-2 px-5 rounded-lg hover:bg-gray-600/80 transition-all duration-300 w-full">
-                    Start Over
-                </button>
+                <div id="button-group" class="hidden mt-4 flex gap-4">
+                    <button id="resetBtn" class="bg-gray-700/50 text-white font-semibold py-2 px-5 rounded-lg hover:bg-gray-600/80 transition-all duration-300 w-full">
+                        Start Over
+                    </button>
+                    <button id="shuffleBtn" class="bg-violet-600/50 text-white font-semibold py-2 px-5 rounded-lg hover:bg-violet-500/80 transition-all duration-300 w-full flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h18m-4.5-12L21 9m0 0L16.5 12M21 9H3" />
+                        </svg>
+                        More Suggestions
+                    </button>
+                </div>
             </div>
 
             <!-- Right Column: Results -->
             <div id="resultsPanel" class="flex flex-col justify-center items-center bg-black/20 rounded-xl p-6 min-h-[350px]">
                 <div id="placeholder" class="text-center text-gray-500 transition-opacity duration-300">
                     <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
-                    <p class="mt-2 font-medium">Your captions will appear here</p>
+                    <p class="mt-4 text-lg font-semibold text-gray-300">Your captions will appear here</p>
                 </div>
                 <div id="loader" class="loader hidden"></div>
                 <div id="resultsContainer" class="w-full h-full hidden flex-col"></div>
@@ -92,7 +100,31 @@
         </main>
     </div>
 
+    <!-- WATERMARK FOOTER -->
+    <footer class="absolute bottom-5 left-0 right-0 text-center text-gray-600 opacity-75 hover:opacity-100 transition-opacity duration-300 z-20">
+        <div class="flex items-center justify-center gap-4">
+            <p class="text-sm">Made by Bahulika</p>
+            <span class="text-gray-700">|</span>
+            <a href="https://github.com/JBahulika" target="_blank" rel="noopener noreferrer" class="hover:text-white" title="GitHub">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+            </a>
+            <a href="https://www.linkedin.com/in/j-bahulika-8b8237207/" target="_blank" rel="noopener noreferrer" class="hover:text-white" title="LinkedIn">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.25 6.5 1.75 1.75 0 016.5 8.25zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93-.91 0-1.38.61-1.38 1.93V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.28.93 3.28 4.46V19z"/>
+                </svg>
+            </a>
+        </div>
+    </footer>
+
+
     <script>
+        // State variables
+        let allSuggestions = [];
+        let currentIndex = 0;
+
+        // DOM Elements
         const dropZone = document.getElementById('dropZone');
         const imageUpload = document.getElementById('imageUpload');
         const previewContainer = document.getElementById('previewContainer');
@@ -101,8 +133,11 @@
         const placeholder = document.getElementById('placeholder');
         const loader = document.getElementById('loader');
         const resultsContainer = document.getElementById('resultsContainer');
+        const buttonGroup = document.getElementById('button-group');
         const resetBtn = document.getElementById('resetBtn');
+        const shuffleBtn = document.getElementById('shuffleBtn');
 
+        // Event Listeners
         dropZone.addEventListener('click', () => imageUpload.click());
         imageUpload.addEventListener('change', (e) => handleFile(e.target.files[0]));
         
@@ -112,6 +147,7 @@
         dropZone.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
 
         resetBtn.addEventListener('click', resetUI);
+        shuffleBtn.addEventListener('click', shuffleCaptions);
 
         function resetUI() {
             imageUpload.value = '';
@@ -121,7 +157,9 @@
             resultsContainer.classList.add('hidden');
             resultsContainer.innerHTML = '';
             placeholder.classList.remove('hidden');
-            resetBtn.classList.add('hidden');
+            buttonGroup.classList.add('hidden');
+            allSuggestions = [];
+            currentIndex = 0;
         }
 
         async function handleFile(file) {
@@ -144,7 +182,11 @@
                 const response = await fetch("/generate_caption/", { method: "POST", body: formData });
                 if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
                 const data = await response.json();
-                displayResults(data);
+                
+                allSuggestions = data.captions || [];
+                currentIndex = 0;
+                displayCurrentCaptions();
+
             } catch (error) {
                 displayError(error.message);
             } finally {
@@ -157,57 +199,61 @@
                 placeholder.classList.add('hidden');
                 resultsContainer.classList.add('hidden');
                 loader.classList.remove('hidden');
+                buttonGroup.classList.add('hidden');
             } else {
                 loader.classList.add('hidden');
-                resetBtn.classList.remove('hidden');
+                buttonGroup.classList.remove('hidden');
             }
         }
 
-        function displayResults(data) {
+        function shuffleCaptions() {
+            if (allSuggestions.length <= 5) return; // No more suggestions to show
+
+            currentIndex += 5;
+            if (currentIndex >= allSuggestions.length) {
+                currentIndex = 0; // Loop back to the beginning
+            }
+            displayCurrentCaptions();
+        }
+
+        function displayCurrentCaptions() {
             resultsContainer.innerHTML = '';
-            if (data.error) {
-                displayError(data.error);
+            
+            if (allSuggestions.length === 0) {
+                displayError("No relevant captions were found for this image.");
                 return;
             }
 
-            if (data.best_caption) {
-                resultsContainer.appendChild(createCaptionElement(data.best_caption, true));
-            }
+            const currentBatch = allSuggestions.slice(currentIndex, currentIndex + 5);
 
-            if (data.other_suggestions?.length > 0) {
-                const suggestionsHeader = document.createElement('h3');
-                suggestionsHeader.className = 'text-md font-semibold text-gray-400 mt-6 mb-3 text-left';
-                suggestionsHeader.textContent = 'Other Suggestions';
-                resultsContainer.appendChild(suggestionsHeader);
-                
-                const suggestionsList = document.createElement('div');
-                suggestionsList.className = 'space-y-3';
-                data.other_suggestions.forEach(cap => {
-                    suggestionsList.appendChild(createCaptionElement(cap, false));
-                });
-                resultsContainer.appendChild(suggestionsList);
-            }
+            const topPickHeader = document.createElement('h3');
+            topPickHeader.className = 'text-md font-semibold text-violet-300 mb-3 text-left';
+            topPickHeader.textContent = "Top Suggestions";
+            resultsContainer.appendChild(topPickHeader);
+
+            const suggestionsList = document.createElement('div');
+            suggestionsList.className = 'space-y-3';
+            currentBatch.forEach((cap, index) => {
+                suggestionsList.appendChild(createCaptionElement(cap, index === 0));
+            });
+            resultsContainer.appendChild(suggestionsList);
+
             resultsContainer.classList.remove('hidden');
             resultsContainer.classList.add('fade-in');
         }
 
-        function createCaptionElement(captionData, isBest) {
+        function createCaptionElement(captionData, isFirst) {
             const el = document.createElement('div');
-            el.className = `p-3.5 rounded-lg text-left transition-colors duration-200 ${isBest ? 'bg-violet-900/50 border border-violet-700' : 'bg-gray-800/70'}`;
-            const scorePercent = (captionData.score * 100).toFixed(0);
+            el.className = `p-3.5 rounded-lg text-left transition-colors duration-200 ${isFirst ? 'bg-violet-900/50 border border-violet-700' : 'bg-gray-800/70'}`;
             const captionTextEscaped = escape(captionData.caption);
 
             el.innerHTML = `
                 <div class="flex justify-between items-start gap-3">
-                    <p class="flex-1 ${isBest ? 'text-lg text-white font-semibold' : 'text-gray-300'}">${captionData.caption}</p>
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs font-mono py-1 px-2 rounded ${isBest ? 'bg-violet-400/20 text-violet-300' : 'bg-gray-700 text-gray-400'}">${scorePercent}%</span>
-                        <button onclick="copyToClipboard(this, '${captionTextEscaped}')" class="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-md" title="Copy caption">
-                            <svg class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        </button>
-                    </div>
+                    <p class="flex-1 ${isFirst ? 'text-lg text-white font-semibold' : 'text-gray-300'}">${captionData.caption}</p>
+                    <button onclick="copyToClipboard(this, '${captionTextEscaped}')" class="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-md" title="Copy caption">
+                        <svg class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    </button>
                 </div>
-                ${isBest ? `<p class="text-xs text-violet-400 font-semibold mt-2">✨ TOP MATCH</p>` : ''}
             `;
             return el;
         }
